@@ -6,6 +6,8 @@ import com.springboot.blog.entity.User;
 
 import java.util.Optional;
 
+
+
 public interface UserRepository extends JpaRepository<User, Long> {
   Optional<User> findByEmail(String email);
 
@@ -16,4 +18,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
   Boolean existsByUsername(String username);
 
   Boolean existsByEmail(String email);
+
 }
