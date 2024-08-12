@@ -7,6 +7,7 @@ import com.springboot.blog.payload.SignUpDto;
 import com.springboot.blog.repository.RoleRepository;
 import com.springboot.blog.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -49,6 +50,14 @@ public class AuthController {
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@RequestBody SignUpDto signUpDto) {
 
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Content-Type", "application/json; charset=utf-8");
+    
+    //checks for fields 
+    if (signUpDto.getUsername().isEmpty() || signUpDto.getEmail().isEmpty() || signUpDto.getPassword().isEmpty() ) {
+      return new ResponseEntity<>("Invalid field!", headers ,HttpStatus.BAD_REQUEST);
+    }
+
     // add check for username exists in a DB
     if (userRepository.existsByUsername(signUpDto.getUsername())) {
       return new ResponseEntity<>("Username is already taken!", HttpStatus.BAD_REQUEST);
@@ -61,7 +70,6 @@ public class AuthController {
 
     // create user object
     User user = new User();
-    user.setName(signUpDto.getName());
     user.setUsername(signUpDto.getUsername());
     user.setEmail(signUpDto.getEmail());
     user.setPassword(passwordEncoder.encode(signUpDto.getPassword()));
@@ -70,7 +78,7 @@ public class AuthController {
     user.setRoles(Collections.singleton(roles));
 
     userRepository.save(user);
-    System.out.println("User created: " + user.getName());
+    System.out.println("User created: " + user.getUsername());
     return new ResponseEntity<>("User registered successfully", HttpStatus.OK);
 
   }
