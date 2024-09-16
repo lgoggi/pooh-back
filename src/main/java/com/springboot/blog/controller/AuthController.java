@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -40,11 +41,27 @@ public class AuthController {
 
   @PostMapping("/signin")
   public ResponseEntity<String> authenticateUser(@RequestBody LoginDto loginDto) {
-    Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+
+    Boolean userExists = userRepository.findByUsernameOrEmail(loginDto.getUsernameOrEmail(), loginDto.getUsernameOrEmail()).isPresent();
+    if (!userExists) {
+      System.out.println("User not found: " + loginDto.getUsernameOrEmail() );
+      return new ResponseEntity<>("User not found!", HttpStatus.BAD_REQUEST);
+    };
+
+      Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
         loginDto.getUsernameOrEmail(), loginDto.getPassword()));
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-    System.out.println("User logged in: " + loginDto.getUsernameOrEmail());
-    return new ResponseEntity<>("User signed-in successfully!.", HttpStatus.OK);
+        
+        
+    System.out.println("authentication: " + authentication);
+    if ( authentication.isAuthenticated()) {
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+      System.out.println("User logged in: " + loginDto.getUsernameOrEmail());
+      return new ResponseEntity<>("User signed-in successfully!", HttpStatus.OK);
+    }; 
+    
+    System.out.println("Invalid password!" + loginDto.getUsernameOrEmail() );
+    return new ResponseEntity<>("Invalid password!", HttpStatus.BAD_REQUEST);
+
   }
 
   @PostMapping("/signup")
