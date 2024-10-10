@@ -30,9 +30,6 @@ public class PoohController {
   @Autowired
   private UserRepository userRepository;
 
-  @Autowired
-  private JwtService jwtService;
-
   @PostMapping("/publish")
   public ResponseEntity<String> publish(@RequestBody PoohDto poohDto) throws Exception {
     User user = (User) userRepository.findByUsername(poohDto.getAuthorID());
