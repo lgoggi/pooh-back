@@ -5,8 +5,13 @@ import lombok.Data;
 import jakarta.persistence.*;
 
 import java.util.Collection;
-import java.util.List;
+
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Data
 @Entity
@@ -14,7 +19,7 @@ import java.util.Set;
         @UniqueConstraint(columnNames = {"username"}),
         @UniqueConstraint(columnNames = {"email"})
 })
-public class User {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,4 +37,31 @@ public class User {
 
     @OneToMany(fetch = FetchType.LAZY)
     private Set<Pooh> poohs;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+      return this.getRoles()
+        .stream()
+        .map((role) -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toSet());
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+      return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+      return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+      return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+      return true;
+    }
 }

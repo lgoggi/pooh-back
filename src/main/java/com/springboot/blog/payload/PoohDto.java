@@ -6,4 +6,5 @@ import lombok.Data;
 public class PoohDto {
   private String authorID;
   private String text;
+  private String token;
 }
