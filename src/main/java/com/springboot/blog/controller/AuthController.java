@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -42,11 +44,19 @@ public class AuthController {
   private PasswordEncoder passwordEncoder;
 
   @PostMapping("/login")
-  public ResponseEntity<String> authenticateUser(@RequestBody @Valid LoginDto loginDto) {
-    Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUsernameOrEmail(), loginDto.getPassword()));  
-    String token = jwtService.generateToken( (User) authentication.getPrincipal() );
+  public ResponseEntity<Object> authenticateUser(@RequestBody @Valid LoginDto loginDto) {
+    System.out.println("request");
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Content-Type", "application/json; charset=utf-8");
     
-    return new ResponseEntity<>(token, HttpStatus.OK);
+    Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getUsernameOrEmail(), loginDto.getPassword()));  
+    User user =  (User) authentication.getPrincipal();
+    String token = jwtService.generateToken(user);
+    Map<String, Object> map = new HashMap<String, Object>();
+		map.put("token", token);
+		map.put("username", user.getUsername());
+    
+    return new ResponseEntity<>(map, HttpStatus.OK);
   }
 
   @PostMapping("/signup")
