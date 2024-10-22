@@ -1,8 +1,12 @@
 package com.springboot.blog.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +16,9 @@ import com.springboot.blog.entity.User;
 import com.springboot.blog.payload.PoohDto;
 import com.springboot.blog.repository.PoohRepository;
 import com.springboot.blog.repository.UserRepository;
+
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +33,7 @@ public class PoohController {
   private UserRepository userRepository;
 
   @PostMapping("/publish")
-  public ResponseEntity<String> publish(@RequestBody PoohDto poohDto) throws Exception {
+  public ResponseEntity<String> publish(@RequestBody @Valid PoohDto poohDto) throws Exception {
     User user = (User) userRepository.findByUsername(poohDto.getAuthorID());
     Pooh pooh = new Pooh();
     System.out.println("user: " + user + "pooh: " + pooh);
@@ -37,12 +44,16 @@ public class PoohController {
   }
 
   @GetMapping("/see")
-  public String see() {
-     List<Pooh> list = poohRepository.findAll();
-    List<String> filteredList = new ArrayList<String>();
+  public ResponseEntity<Object> see() {
+     List<Pooh> list = poohRepository.findAllByOrderByCreatedDateDesc();
+    List<Object> filteredList = new ArrayList<Object>();
     for (Pooh i : list) {
-      filteredList.add(i.getText());
+       Map<String, Object> map = new HashMap<String, Object>();
+       map.put("id", i.getId());
+       map.put("text", i.getText());
+       map.put("author", i.getUsers().getUsername());
+      filteredList.add(map);
     }
-    return ("poohs: " + filteredList);
+    return new ResponseEntity<Object>(filteredList, HttpStatus.OK);
   }
 }
